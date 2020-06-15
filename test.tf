@@ -114,7 +114,7 @@ resource "null_resource" "command" {
     provisioner "remote-exec" {
       inline = [
         "sudo rm -rf /var/www/html/*",
-        "sudo git clone https://github.com/govi230/gb.git /var/www/html/",
+        "sudo git clone https://github.com/govi230/web-jenkins.git /var/www/html/",
       ]
     }
 }
