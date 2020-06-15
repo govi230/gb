@@ -113,10 +113,15 @@ resource "null_resource" "command" {
     }
     provisioner "remote-exec" {
       inline = [
+        "sudo mkfs.ext4 /dev/xvdf",
+        "sudo mount /dev/xvdf /var/www/html/",
         "sudo rm -rf /var/www/html/*",
         "sudo git clone https://github.com/govi230/web-jenkins.git /var/www/html/",
       ]
     }
+    depends_on = [
+      aws_volume_attachment.attach-ebs
+      ]
 }
 
 
@@ -270,7 +275,7 @@ resource "aws_ebs_snapshot" "ebs_snapshot" {
     Name = "first_snapshot1"
   }
   depends_on = [
-  null_resource.command
+  aws_cloudfront_distribution.s3_distribution
   ]
 }
 
