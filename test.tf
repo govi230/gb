@@ -87,41 +87,9 @@ resource "aws_instance" "instance1" {
   tags = {
   Name = "first_task_inatance"
   }
-  connection {
-      type = "ssh"
-      user = "ec2-user"
-      private_key = file("/root/task1.pem")
-      host = aws_instance.instance1.public_ip
-    }
-  provisioner "remote-exec" {
-      inline = [
-        "sudo yum install httpd git php -y",
-        "sudo systemctl restart httpd",
-        "sudo systemctl enable httpd",
-      ]
-    }
   depends_on = [
   aws_security_group.securitytest
   ]
-}
-resource "null_resource" "command" {
-    connection {
-      type = "ssh"
-      user = "ec2-user"
-      private_key = file("/root/task1.pem")
-      host = aws_instance.instance1.public_ip
-    }
-    provisioner "remote-exec" {
-      inline = [
-        "sudo mkfs.ext4 /dev/xvdf",
-        "sudo mount /dev/xvdf /var/www/html/",
-        "sudo rm -rf /var/www/html/*",
-        "sudo git clone https://github.com/govi230/web-jenkins.git /var/www/html/",
-      ]
-    }
-    depends_on = [
-      aws_volume_attachment.attach-ebs
-      ]
 }
 
 
@@ -143,21 +111,32 @@ resource "aws_volume_attachment" "attach-ebs" {
   volume_id = aws_ebs_volume.vol.id
   instance_id = aws_instance.instance1.id
   force_detach = true
-  connection {
+  depends_on = [
+  aws_ebs_volume.vol
+  ]
+}
+
+resource "null_resource" "command" {
+    connection {
       type = "ssh"
       user = "ec2-user"
       private_key = file("/root/task1.pem")
       host = aws_instance.instance1.public_ip
     }
-  provisioner "remote-exec" {
+    provisioner "remote-exec" {
       inline = [
+        "sudo yum install httpd git php -y",
+        "sudo systemctl restart httpd",
+        "sudo systemctl enable httpd",
         "sudo mkfs.ext4 /dev/xvdf",
         "sudo mount /dev/xvdf /var/www/html/",
+        "sudo rm -rf /var/www/html/*",
+        "sudo git clone https://github.com/govi230/web-jenkins.git /var/www/html/",
       ]
     }
-  depends_on = [
-  aws_ebs_volume.vol
-  ]
+    depends_on = [
+      aws_volume_attachment.attach-ebs
+      ]
 }
 
 resource "aws_s3_bucket" "govibucket" {
