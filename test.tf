@@ -127,6 +127,17 @@ resource "aws_ebs_volume" "vol" {
   tags = {
   Name = "taskvol1"
   }
+  
+  depends_on = [
+   aws_instance.instance1
+  ]
+}
+
+resource "aws_volume_attachment" "attach-ebs" {
+  device_name = var.enter_ebs_volume_device_name
+  volume_id = aws_ebs_volume.vol.id
+  instance_id = aws_instance.instance1.id
+  force_detach = true
   connection {
       type = "ssh"
       user = "ec2-user"
@@ -139,17 +150,6 @@ resource "aws_ebs_volume" "vol" {
         "sudo mount /dev/xvdf /var/www/html/",
       ]
     }
-  depends_on = [
-   aws_instance.instance1
-  ]
-}
-
-resource "aws_volume_attachment" "attach-ebs" {
-  device_name = var.enter_ebs_volume_device_name
-  volume_id = aws_ebs_volume.vol.id
-  instance_id = aws_instance.instance1.id
-  force_detach = true
-  
   depends_on = [
   aws_ebs_volume.vol
   ]
